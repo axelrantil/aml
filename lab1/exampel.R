@@ -39,7 +39,6 @@ adj["D", "E"] = 1L
 adj["A", "E"] = 1L
 adj
 
-
 amat(e) = adj
 
 e
