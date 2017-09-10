@@ -43,7 +43,7 @@ score <- integer(length=0)
 
 for (i in im_sa_si){
   bnBD <- hc(df, start = NULL, score = "bde", iss=i, 
-                   restart = 3, perturb = 3, max.iter = Inf,
+                   restart = 0, perturb = 1, max.iter = Inf, #3 & 3
                    maxp = Inf, optimized = TRUE)
   no_of_arcs = c(no_of_arcs, nrow(bnBD$arcs))
   score = c(score, score(bnBD,df, type = "bde", iss=i))
