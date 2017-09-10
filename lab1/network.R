@@ -43,16 +43,18 @@ score <- integer(length=0)
 
 for (i in im_sa_si){
   bnBD <- hc(df, start = NULL, score = "bde", iss=i, 
-                   restart = 0, perturb = 1, max.iter = Inf, #3 & 3
+                   restart = 3, perturb = 3, max.iter = Inf,
                    maxp = Inf, optimized = TRUE)
-  no_of_arcs = c(no_of_arcs, nrow(bnBD$arcs))
-  score = c(score, score(bnBD,df, type = "bde", iss=i))
+  no_of_arcs <- c(no_of_arcs, nrow(bnBD$arcs))
+  score <- c(score, score(bnBD,df, type = "bde", iss=i))
 }
 
+opt_sample_size <- alpha.star(bn1, df)
 
 plot(im_sa_si,no_of_arcs, xlab="Imaginary sample size", ylab="Number of arcs")
+abline(v = opt_sample_size, untf = FALSE, col="green")
 plot(im_sa_si,score, type="l", xlab="Imaginary sample size", ylab="Score")
-
+abline(v = opt_sample_size, untf = FALSE, col="green")
 
 
 
