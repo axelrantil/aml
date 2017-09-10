@@ -2,7 +2,6 @@ load.data <- function() {
   
   df <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data", header = FALSE, sep = " ")
 
-  
   #Gör detta till en vector som gör om alla samtidigt
   
   df$V2 <- as.numeric(df$V2)
@@ -28,13 +27,13 @@ load.data <- function() {
   
   header <- c("Checking account",
               "Duration",
-              "Credit history",
+              "CreditHistory",
               "Purpose",
               "Amount credit",
               "Savings account",
-              "Employment since",
+              "EmploymentSince",
               "Installment rate",
-              "Marital and sex",
+              "MaritalAndSex",
               "Guarantors",
               "Residence since",
               "Owned property",
@@ -46,16 +45,16 @@ load.data <- function() {
               "People care for",
               "Telephone",
               "Foreign worker",
-              "Good/bad credit"
+              "Good/BadCredit"
               )
   
   colnames(df) <- header
   
-  #df <- df[, c("Duration", "Credit history", "Purpose", "Amount credit", "Employment since", "Marital and sex", "Age", "Job", "Housing")] #Mixed
+  #df <- df[, c("Duration", "Credit history", "Purpose", "Amount credit", "EmploymentSince", "Marital and sex", "Age", "Job", "Housing")] #Mixed
   
   #Gör detta till en vector som tar bort alla kontinuerliga
   
-  df <- df[, c("Credit history", "Purpose", "Employment since", "Marital and sex", "Job", "Housing")] #Discrete
+  df <- df[, c("CreditHistory", "Purpose", "EmploymentSince", "MaritalAndSex", "Job", "Housing", "Good/BadCredit")] #Discrete
   
   return(list("df"=df, "header"=header))
 }

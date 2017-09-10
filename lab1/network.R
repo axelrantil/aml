@@ -27,7 +27,7 @@ all.equal(bn1,bn2) # Should be false
 
 ############# TASK TWO #############
 
-im_sa_si <- c(1:2000)
+im_sa_si <- c(1:1)
 
 no_of_arcs <- integer(length=0)
 score <- integer(length=0)
@@ -45,12 +45,31 @@ for (i in im_sa_si){
   
 }
 
-
-
+graphviz.plot(bnBD)
 plot(im_sa_si,no_of_arcs, xlab="Imaginary sample size", ylab="Number of arcs")
 abline(v = opt_sample_size, untf = FALSE, col="green")
 plot(im_sa_si,score, type="l", xlab="Imaginary sample size", ylab="Score")
 abline(v = opt_sample_size, untf = FALSE, col="green")
+
+############# TASK THREE #############
+
+finalBN <- hc(df, start = NULL, score = "bde", iss=80, 
+           restart = 3, perturb = 3, max.iter = Inf,
+           maxp = Inf, optimized = TRUE)
+nrow(finalBN$arcs) #8 arcs should be fine
+graphviz.plot(finalBN)
+
+copy <- finalBN
+
+### Exact ###
+
+exact.fit.result <- bn.fit(finalBN, df) #done with MLE
+
+efr <- as.grain(exact.fit.result)
+
+compile(efr)
+
+
 
 
 
