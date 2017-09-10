@@ -1,6 +1,7 @@
 ############# TASK ONE #############
 
 library(bnlearn)
+library(gRain)
 
 source ("import_data.R") 
 ret <- load.data()
@@ -68,8 +69,6 @@ exact.fit.result <- bn.fit(finalBN, df) #done with MLE
 efr <- as.grain(exact.fit.result)
 
 compile(efr)
-
-
 
 
 

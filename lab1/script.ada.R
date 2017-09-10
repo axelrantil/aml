@@ -1,6 +1,5 @@
 setwd("~/TDDE15/aml/lab1")
 installed.packages("bnlearn")
 source("http://bioconductor.org/biocLite.R")
-biocLite("RBGL")
-biocLite("Rgraphviz")
-install.packages("gRain")
+biocLite("graph", "RBGL", "Rgraphviz")
+install.packages("gRain", dependencies=TRUE)
