@@ -56,5 +56,6 @@ load.data <- function() {
   
   df <- df[, c("CreditHistory", "Purpose", "EmploymentSince", "MaritalAndSex", "Job", "Housing", "Good/BadCredit")] #Discrete
   
+
   return(list("df"=df, "header"=header))
 }

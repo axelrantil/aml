@@ -68,7 +68,10 @@ exact.fit.result <- bn.fit(finalBN, df) #done with MLE
 
 efr <- as.grain(exact.fit.result)
 
-compile(efr)
+jtree <- compile(efr)
 
+#setFinding(jtree)
+
+exact <- querygrain(jtree)
 
 
