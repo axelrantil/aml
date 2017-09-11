@@ -56,6 +56,21 @@ load.data <- function() {
   
   df <- df[, c("CreditHistory", "Purpose", "EmploymentSince", "MaritalAndSex", "Job", "Housing", "Good/BadCredit")] #Discrete
   
+  require(plyr)
+  
+  df$CreditHistory <- mapvalues(df$CreditHistory,
+                                from=c("A30", "A31", "A32", "A33", "A34"),
+                                to=c("No History/Good", "this bank payed back",
+                                     "existing and on time", "delay in payments",
+                                     "critical/other credits"))
 
+  df$Housing <- mapvalues(df$Housing,
+                                from=c("A151", "A152", "A153"),
+                                to=c("rent", "own", "free"))
+  
+  df$`Good/BadCredit` <- mapvalues(df$`Good/BadCredit`,
+                          from=c("1", "2"),
+                          to=c("good", "bad"))
+  
   return(list("df"=df, "header"=header))
 }
