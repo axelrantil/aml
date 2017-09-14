@@ -28,7 +28,7 @@ all.equal(bn1,bn2) # Should be false
 
 ############# TASK TWO #############
 
-im_sa_si <- c(1:1)
+im_sa_si <- c(1:2000)
 
 no_of_arcs <- integer(length=0)
 score <- integer(length=0)
@@ -43,7 +43,6 @@ for (i in im_sa_si){
   if (i==1 | i ==2000){
     opt_sample_size <- c(opt_sample_size, alpha.star(bnBD, df))
   }
-  
 }
 
 graphviz.plot(bnBD)
@@ -57,7 +56,7 @@ abline(v = opt_sample_size, untf = FALSE, col="green")
 finalBN <- hc(df, start = NULL, score = "bde", iss=80, 
            restart = 0, perturb = 1, max.iter = Inf,
            maxp = Inf, optimized = TRUE)
-nrow(finalBN$arcs) #8 arcs should be fine
+nrow(finalBN$arcs) # 8 arcs represents a complex enough model
 graphviz.plot(finalBN)
 
 ### Fit data into BN ### 
@@ -66,13 +65,13 @@ fittedMLE <- bn.fit(finalBN, df, method="mle") #done with MLE
 
 ### Compute approximate inference, example ###
 
-dfOwn <- df[c(df$Housing=="own"),] # Set conditional to "own"
+dfOwn <- df[df$Housing=="own",] # Set conditional to "own"
 
 tableOwnManualMLE <- prop.table(table(dfOwn[,c("Good/BadCredit","CreditHistory")]),2) # Maximum likelihood method
 
 tableOwnFittedMLE <- fittedMLE$`Good/BadCredit`$prob[,,2] # Extract probabilities Good/BadCredit given Housing="own"
 
-tableOwnFittedMLE == tableOwnManualMLE # True for all entries
+all.equal(tableOwnFittedMLE, tableOwnManualMLE) # True for all entries
 
 ### Compute exact inference ###
 
@@ -80,9 +79,21 @@ jTree <- compile(as.grain(fittedMLE))
 
 ### Compare given no observed nodes ###
 
-exact0 <- querygrain(jTree, "Good/BadCredit")
+fiveExact <- numeric(length=0)
+fiveApprox <- numeric(length=0)
 
-#approx0 <- prop.table(table(cpdist(fittedMLE)) # cpdist requires evidence!
+for (i in 1:5){
+  exact0 <- querygrain(jTree, "Good/BadCredit")
+  approx0 <- prop.table(table(cpdist(fittedMLE, "Good/BadCredit", evidence=TRUE)))
+  fiveExact <- c(fiveExact, exact0$`Good/BadCredit`)
+  fiveApprox <- c(fiveApprox, approx0)
+}
+matrix(fiveExact,5,2, byrow=TRUE, dimnames = list(c(1:5),c("good","bad")))
+matrix(fiveApprox,5,2, byrow=TRUE, dimnames = list(c(1:5),c("good","bad")))
+
+approx0
+
+difference0 <- exact0$`Good/BadCredit` - approx0
 
 ### Compare given one observed node ###
 
@@ -92,7 +103,7 @@ exact1 <- querygrain(jTree1, "Good/BadCredit")
 
 approx1 <- prop.table(table(cpdist(fittedMLE, "Good/BadCredit", (Housing == "own"))))
 
-difference1 <- (exact1$`Good/BadCredit`-approx1)
+difference1 <- exact1$`Good/BadCredit`-approx1
 
 approx1
 
@@ -116,21 +127,25 @@ exact3$`Good/BadCredit`
 
 difference3
 
+cr <- list(c("No observed nodes", "One observed node", "Three observed nodes"),c("good","bad"))
+
+matrix(c(difference0, difference1, difference3),3,2,byrow=TRUE, dimnames = cr)
+
 ############# TASK FOUR #############
 
-rDAG <- random.graph(LETTERS[1:5], num = 29281) # 4183 = 29281 / 7
+samples <- 50000
+
+rDAG <- random.graph(LETTERS[1:5], num = samples, method = "melancon")
+
+length(unique(rDAG))
 
 rcpdag <- lapply(rDAG, function(x) cpdag(x))
 
-orderedArcs <- rcpdag[[1]]$arcs
+length(unique(rcpdag))
 
-for (i in 2:29281){
-  orderedArcs <- c(orderedArcs, rcpdag[[i]]$arcs)
-}
+fraction <- length(unique(rcpdag)) / length(unique(rDAG))
 
-uqrcpdag <- unique(orderedArcs) 
-
-fractionSample <- length(uqrcpdag)/29281
+fraction
 
 
 
