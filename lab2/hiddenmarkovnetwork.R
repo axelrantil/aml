@@ -92,13 +92,16 @@ entropyFiltering <- apply(prop.table(forwardAlpha, 2), 2, entropy.empirical)
 
 entropySmoothing <- apply(prop.table(forwardAlpha*backwardBeta,2), 2, entropy.empirical)
 
+sum(entropyFiltering < entropySmoothing)
 
 matplot(1:100, entropyFiltering, type = "l", col = "red", xlab = "Step", ylab = "Entropy")
 lines(entropySmoothing,type="l",col="blue")
 legend(10, 1.6, legend=c("Filtering", "Smoothing"),
        col=c("red", "blue"), lty=1:1)
 
-### Task 7, känns för lätt? ###
+
+
+### Task 7 ###
 
 step100 <- prop.table(forwardAlpha,2)[,100]
 
