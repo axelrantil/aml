@@ -34,9 +34,9 @@ obs <- sim$observation
 
 trueStates <- sim$states
 
-### TASK THREE AND FOUR###
+### TASK THREE AND FOUR ###
 
-### FORWARD/ALPHA/FILTERED ###
+### FILTERED ###
 
 forwardAlpha = exp(forward(hmm, obs))
 
@@ -98,14 +98,13 @@ filteredAccFirstHalf
 
 filteredAccSecondHalf <- sum(filteredCalc[51:100] == sim$states[51:100])/length(filteredCalc[51:100])
 
-filteredAccSecondHalf
+filteredAccSecondHalf # Not necessarily higher
 
 ### TASK SEVEN ###
 
 ### Check last index, step 100 ###
 
 prop.table(forwardAlpha*backwardBeta,2)[,100] == prop.table(forwardAlpha,2)[,100] # True for all states
-
 
 step100 <- prop.table(forwardAlpha,2)[,100]
 
