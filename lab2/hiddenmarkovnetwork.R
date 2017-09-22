@@ -22,20 +22,6 @@ for (i in 1:10) {
 
 emissionProbs <- matrix(emissionProbs, 10, 10, byrow=TRUE, dimnames=list(stateNames, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
 
-
-#emissionProbs <- matrix(c(1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5,
-#                          1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5,
-#                          1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0,
-#                          0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0,
-#                          0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0,
-#                          0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0,
-#                          0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0,
-#                          0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5,
-#                          1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5,
-#                          1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5), 
-#                        10, 10, byrow=TRUE, 
-#                        dimnames=list(stateNames, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
-
 hmm = initHMM(stateNames, states, transProbs = stepProbs, emissionProbs = emissionProbs)
 
 ### TASK TWO ###
@@ -48,7 +34,7 @@ obs <- sim$observation
 
 trueStates <- sim$states
 
-### TASK THREE, FOUR AND FIVE ###
+### TASK THREE AND FOUR###
 
 ### FORWARD/ALPHA/FILTERED ###
 
@@ -86,16 +72,14 @@ viterbiAcc <- sum(pathCalc == sim$states)/length(pathCalc)
 
 viterbiAcc
 
-### Check last index, step 100 ###
-
-prop.table(forwardAlpha*backwardBeta,2)[,100] == prop.table(forwardAlpha,2)[,100] # True for all states
+### TASK FIVE ###
 
 ### Question 1: Smoothed is using more information: the whole set of observed emission x[0:T] whereas filtered only uses data emitted up to that point x[0:t]
 
 ### Question 2: The viterbi algoritm generates a most likely path, i.e. it has to abide to the constraints of the transitions between states in the hidden variables
 ### The smooth approximation approximate the most likely state, and can therefor make "illegal" moves from one state to another when predicting current state.
 
-### Task 6 ###
+### TASK SIX ###
 
 entropyFiltering <- apply(prop.table(forwardAlpha, 2), 2, entropy.empirical)
 
@@ -116,7 +100,12 @@ filteredAccSecondHalf <- sum(filteredCalc[51:100] == sim$states[51:100])/length(
 
 filteredAccSecondHalf
 
-### Task 7 ###
+### TASK SEVEN ###
+
+### Check last index, step 100 ###
+
+prop.table(forwardAlpha*backwardBeta,2)[,100] == prop.table(forwardAlpha,2)[,100] # True for all states
+
 
 step100 <- prop.table(forwardAlpha,2)[,100]
 
