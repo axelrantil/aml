@@ -1,5 +1,6 @@
 library(HMM)
 library(entropy)
+library(data.table)
 
 ### TASK ONE ###
 
@@ -13,19 +14,27 @@ stepProbs <- stepProbs[,-11] + 1/2*diag(10)
 
 dimnames(stepProbs) <-list(as.character(0:9), as.character(0:9))
 
-emissionProbs <- matrix(c(1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5,
-                          1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5,
-                          1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0,
-                          0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0,
-                          0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0,
-                          0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0,
-                          0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0,
-                          0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5,
-                          1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5,
-                          1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5), 
-                        10, 10, byrow=TRUE, 
-                        dimnames=list(stateNames, paste(rep("p(x= ",10),as.character(0:9),rep(")",10))))
+emissionProbs <- c(1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5)
 
+for (i in 1:10) {
+  emissionProbs <- c(emissionProbs, shift(tail(emissionProbs,n=10), n=1, fill = tail(emissionProbs,n=1)))
+}
+
+emissionProbs <- matrix(emissionProbs, 10, 10, byrow=TRUE, dimnames=list(stateNames, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
+
+
+#emissionProbs <- matrix(c(1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5,
+#                          1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5,
+#                          1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0, 0,
+#                          0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0, 0,
+#                          0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0, 0,
+#                          0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0, 0,
+#                          0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5, 0,
+#                          0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5, 1/5,
+#                          1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5, 1/5,
+#                          1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5, 1/5), 
+#                        10, 10, byrow=TRUE, 
+#                        dimnames=list(stateNames, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
 
 hmm = initHMM(stateNames, states, transProbs = stepProbs, emissionProbs = emissionProbs)
 
@@ -92,13 +101,20 @@ entropyFiltering <- apply(prop.table(forwardAlpha, 2), 2, entropy.empirical)
 
 entropySmoothing <- apply(prop.table(forwardAlpha*backwardBeta,2), 2, entropy.empirical)
 
-
 matplot(1:100, entropyFiltering, type = "l", col = "red", xlab = "Step", ylab = "Entropy")
 lines(entropySmoothing,type="l",col="blue")
 legend(10, 1.6, legend=c("Filtering", "Smoothing"),
        col=c("red", "blue"), lty=1:1)
 
-### Task 7, känns för lätt? ###
+filteredAccFirstHalf <- sum(filteredCalc[1:50] == sim$states[1:50])/length(filteredCalc[1:50])
+
+filteredAccFirstHalf
+
+filteredAccSecondHalf <- sum(filteredCalc[51:100] == sim$states[51:100])/length(filteredCalc[51:100])
+
+filteredAccSecondHalf
+
+### Task 7 ###
 
 step100 <- prop.table(forwardAlpha,2)[,100]
 
