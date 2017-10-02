@@ -1,13 +1,14 @@
 
-SquaredExpoKernel <- function(x1, x2, sigmaF=1, l=3){
+SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){ #Implementera egen?
   n1 <- length(x1)
   n2 <- length(x2)
-  K <- matrix(NA, n1, n2)
+  K <- matrix(NA,n1,n2)
   for (i in 1:n2){
-    K[,i] <- sigmaF^2*exp(-0.5*((x1-x2[i]/l)^2)) #Prior mean for f is zero
+    K[,i] <- sigmaF^2*exp(-0.5*( (x1-x2[i])/l)^2 )
   }
   return(K)
 }
+
 
 # xStar: grid
 # x: datapunkter
@@ -39,7 +40,7 @@ K <-SquaredExpoKernel(x, x, sigmaF, l)
 L <- t(chol(K + sigmaNoise*diag(1, nrow(K),ncol(K))))
 alpha <- solve(t(L), solve(L, y))
 kStar <- SquaredExpoKernel(x, xStar, sigmaF, l) #Normalisera f???
-MeanPosterior <- t(kStar)%*%alpha
+MeanPosterior <- t(kStar)%*%alpha # fstar
 v <- solve(L, kStar)
 VarPosterior <- SquaredExpoKernel(xStar, xStar, sigmaF, l) - t(v)%*%v
 
