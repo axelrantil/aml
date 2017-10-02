@@ -36,13 +36,13 @@ l <- 0.3
 sigmaNoise <- 0.1
 x <- 0.4
 y <- 0.719
-K <-SquaredExpoKernel(x, x, sigmaF, l)
+K <-SquaredExpKernel(x, x, sigmaF, l)
 L <- t(chol(K + sigmaNoise*diag(1, nrow(K),ncol(K))))
 alpha <- solve(t(L), solve(L, y))
-kStar <- SquaredExpoKernel(x, xStar, sigmaF, l) #Normalisera f???
-MeanPosterior <- t(kStar)%*%alpha # fstar
+kStar <- SquaredExpKernel(x, xStar, sigmaF, l) 
+MeanPosterior <- t(kStar)%*%alpha # fstar normalisera?
 v <- solve(L, kStar)
-VarPosterior <- SquaredExpoKernel(xStar, xStar, sigmaF, l) - t(v)%*%v
+VarPosterior <- SquaredExpKernel(xStar, xStar, sigmaF, l) - t(v)%*%v
 
 
 
