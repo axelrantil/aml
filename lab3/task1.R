@@ -89,7 +89,6 @@ VarPosterior <- posterior[[2]]
 PlotLines(x, y, xStar, MeanPosterior, diag(VarPosterior))
 
 ### 2 ###
-install.packages("kernlab")
 library(kernlab)
 
 read.csv('https://github.com/STIMALiU/AdvMLCourse/raw/master/GaussianProcess/Code/TempTullinge.csv', header=TRUE,
@@ -103,7 +102,19 @@ day <- replace(day, day==0, 365)
 time <- time[seq(1,length(time), 5)]
 
 day <- day[seq(1,length(day), 5)]
-  
 
+### 2a ###
 
+SEkernel <- function(sigmaf=1, ell=3){
+  rval <- function(x, xtick){
+    return(sigmaf^2*exp(-(dist(x-xtick,method = "euclidean")))/(2*ell^2))
+  }
+  return(rval)
+}
+
+mySE <- SEkernel(sigmaf=1, ell=1) 
+
+mySE(1,2)
+
+K <- mySE(c(1,3,4), c(2,3,4))
 

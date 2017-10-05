@@ -7,7 +7,8 @@
 #############################################################################
 ###    Prelims: Setting path and installing/loading packages            #####
 #############################################################################
-setwd('/Users/mv/Dropbox/Teaching/AdvML/GaussianProcess/Code')
+#setwd('/Users/mv/Dropbox/Teaching/AdvML/GaussianProcess/Code')
+setwd("~/Projects/aml/lab3")
 #install.packages('kernlab')
 #install.packages("AtmRay") # To make 2D grid like in Matlab's meshgrid
 library(kernlab)
