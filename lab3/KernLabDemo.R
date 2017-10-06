@@ -10,7 +10,7 @@
 #setwd('/Users/mv/Dropbox/Teaching/AdvML/GaussianProcess/Code')
 setwd("~/Projects/aml/lab3")
 #install.packages('kernlab')
-#install.packages("AtmRay") # To make 2D grid like in Matlab's meshgrid
+install.packages("AtmRay") # To make 2D grid like in Matlab's meshgrid
 library(kernlab)
 library(AtmRay)
 
@@ -164,3 +164,4 @@ plot(gridPoints,  pch=".", cex=3, col=ifelse(meanPred==1, "red", ifelse(meanPred
 points(iris[iris[,5]=='setosa',3],iris[iris[,5]=='setosa',4],col="red", cex=10, pch=".")
 points(iris[iris[,5]=='virginica',3],iris[iris[,5]=='virginica',4],col="blue",  cex=10, pch=".")
 points(iris[iris[,5]=='versicolor',3],iris[iris[,5]=='versicolor',4],col="green",  cex=10, pch=".")
+

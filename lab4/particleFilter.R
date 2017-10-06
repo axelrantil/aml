@@ -49,7 +49,7 @@ z <- result[[1]]
 
 x <- result[[2]]
 
-zApprox <- matrix(0, 1, 100) 
+zApprox <- matrix(0, 100, 100) 
 
 weights <- rep(0, 100)
 
@@ -59,6 +59,29 @@ particles[,1] <- runif(100,1,100) # zt^m
 
 ### Loopen
 
+#install.packages("LaplacesDemon")
+library(LaplacesDemon)
+
+for (s in 1:100){ # s for step
+  for (p in 1:100){ # p for particle
+    weights[p] <- (dnorm(x[1], particles[p], sdE) + dnorm(x[1], particles[p]-1, sdE) + dnorm(x[1], particles[p] + 1 , sdE))/ 3
+  }
+  weights <- weights/sum(weights) # 
+  
+  for (i in 1:100){ # i for iteration
+    particles[i, s+1] <- weights[i] * (rnorm(1, particles[i, s], sdE) + rnorm(1, particles[i, s]+1, sdE) + rnorm(1, particles[i, s]+2, sdE))/3 # mixture distribution
+  }
+}
+
+hist(particles[particles[,2]<2,2])
+
+
+##fel nedan
+
+# zApprox[,s] <- weights*particles[,s] # MIXTURE DISTRIBUTION 
+# 
+# knas <- rcat(100, zApprox[,s])
+
 for (s in 1:100){ # s for step
   ufdE <- runif(100,0,1)
   for (p in 1:100){ # p for particle
@@ -66,14 +89,13 @@ for (s in 1:100){ # s for step
   }
   weights <- weights/sum(weights) # normalize
   zApprox[s] <- sum(weights*particles[,s]) # approximate z
-  
   ufdT <- runif(100,0,1) # random variables for transition
   for (i in 1:100){ # i for iteration
     particles[i, s+1] <- rnorm(1, mean = transitionFunction(zApprox[s], ufdT[i], sdE), sd=sdE)
   }
 }
 
-plot(1:100, z)
+plot(1:100, apply(particles, 1, mean))
 lines(1:100, zApprox)
 
 hist(z-zApprox)

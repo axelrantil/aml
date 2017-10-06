@@ -1,5 +1,5 @@
 
-SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){ #Implementera egen?
+SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){ 
   n1 <- length(x1)
   n2 <- length(x2)
   K <- matrix(NA,n1,n2)
@@ -9,10 +9,10 @@ SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){ #Implementera egen?
   return(K)
 }
 
-PlotLines <- function(x, y, grid, Mean, Variance){
+PlotLines <- function(x, y, grid, Mean, Variance, yaxis=c(-3, 3)){
   UpperLimit <- Mean+1.96 * sqrt(Variance)
   LowerLimit <- Mean-1.96 * sqrt(Variance)
-  matplot(grid, Mean, type='l', col ="red", xlab="x", ylab="y", ylim=c(-3, 3))
+  matplot(grid, Mean, type='l', col ="red", xlab="x", ylab="y", ylim=yaxis)
   points(x, y, col="blue")
   lines(grid, UpperLimit, type="l", col="green")
   lines(grid, LowerLimit, type="l", col="green")
@@ -122,12 +122,56 @@ kernelMatrix(mySE, c(1,3,4), c(2,3,4))
 
 ### 2b ###
 
-summary(lm(formula = data[day,2] ~ day + I(day^2)))
+sigmaNoise <- summary(lm(formula = data[time,2] ~ time + I(time^2)))$sigma
 
-plot(day, data[day,2])
-lines(day, (-20.013013+0.359757*day-0.000939*I(day^2)))
+polyFit <- lm(data[time,2] ~ time + I(time^2))
+sigmaNoise2 = sd(polyFit$residuals)
 
-quadfit
+# ell = 0.02 => overfitting
+# ell = 5 => overly smooth
+# smaller sigmaf => more compact predictions (worse)
+# sigmaf large enough => no changes for larger sigmaf
+model <- gausspr(time, data[time,2], kernel = SEkernel(sigmaf=20, ell=0.1), var = sigmaNoise^2)
+
+mean <- predict(model, time)
 
 
+plot(time, data[time,2])
+#lines(day,mean)
+lines(time,mean, col="purple")
+# lines(time, mean + 1,96*predict(model, time, type="sdeviation"), col="red")
+# lines(time, mean - 1,96*predict(model, time, type="sdeviation"), col="red")
+
+### 2c ###
+
+posterior <- posteriorGP(time, data[time,2], time, c(20, 0.1), sigmaNoise = sigmaNoise^2)
+MeanPosterior <- posterior[[1]]
+VarPosterior <- posterior[[2]]
+
+PlotLines(time, data[time,2], time, MeanPosterior, diag(VarPosterior), c(-15,30))
+
+# matplot(time, MeanPosterior, type='l', col ="red", xlab="x", ylab="y", ylim=c(-15, 20))
+# points(time, data[time,2], col="blue")
+# UpperLimit <- MeanPosterior+1.96 * sqrt(diag(VarPosterior))
+# LowerLimit <- MeanPosterior-1.96 * sqrt(diag(VarPosterior))
+# lines(time, UpperLimit, type="l", col="green")
+# lines(time, LowerLimit, type="l", col="green")
+
+### 2d ###
+
+model <- gausspr(day, data[time,2], kernel = SEkernel(sigmaf=20, ell=0.1), var = sigmaNoise^2)
+
+mean <- predict(model, time)
+
+plot(day, data[time,2])
+#lines(day,mean)
+lines(time,mean, col="purple")
+
+posterior <- posteriorGP(day, data[time,2], day, c(20, 30), sigmaNoise = sigmaNoise^2)
+
+MeanPosterior <- posterior[[1]]
+
+VarPosterior <- posterior[[2]]
+
+PlotLines(day, data[time,2], day, MeanPosterior, diag(VarPosterior), c(-15,30))
 
