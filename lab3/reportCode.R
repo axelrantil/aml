@@ -1,4 +1,3 @@
-
 SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){ 
   n1 <- length(x1)
   n2 <- length(x2)
@@ -7,6 +6,23 @@ SquaredExpKernel <- function(x1,x2,sigmaF=1,l=3){
     K[,i] <- sigmaF^2*exp(-0.5*( (x1-x2[i])/l)^2 )
   }
   return(K)
+}
+
+# xStar: grid
+# x: input
+# y: target
+# hyperparam: vector (sigmaf, l)
+posteriorGP <- function(x, y, xStar, hyperParam, sigmaNoise){
+  sigmaF <- hyperParam[[1]]
+  l <- hyperParam[[2]]
+  K <-SquaredExpKernel(x, x, sigmaF, l)
+  L <- t(chol(K + sigmaNoise*diag(1, nrow(K),ncol(K))))
+  alpha <- solve(t(L), solve(L, y))
+  kStar <- SquaredExpKernel(x, xStar, sigmaF, l) 
+  MeanPosterior <- t(kStar)%*%alpha
+  v <- solve(L, kStar)
+  VarPosterior <- SquaredExpKernel(xStar, xStar, sigmaF, l) - t(v)%*%v
+  return(list(MeanPosterior, VarPosterior))
 }
 
 PlotLines <- function(x, y, grid, Mean, Variance, yaxis=c(-3, 3)){
@@ -18,134 +34,40 @@ PlotLines <- function(x, y, grid, Mean, Variance, yaxis=c(-3, 3)){
   lines(grid, LowerLimit, type="l", col="purple")
 }
 
-# xStar: grid
-# x: datapunkter
-# y: target
-# hyperparam: vector with (sigmaf, l)
-posteriorGP <- function(x, y, xStar, hyperParam, sigmaNoise){
-  sigmaF <- hyperParam[[1]]
-  l <- hyperParam[[2]]
-  K <-SquaredExpKernel(x, x, sigmaF, l)
-  L <- t(chol(K + sigmaNoise *diag(1, nrow(K),ncol(K))))
-  alpha <- solve(t(L), solve(L, y))
-  kStar <- SquaredExpKernel(x, xStar, sigmaF, l) 
-  MeanPosterior <- t(kStar)%*%alpha
-  v <- solve(L, kStar)
-  VarPosterior <- SquaredExpKernel(xStar, xStar, sigmaF, l) - t(v)%*%v
-  return(list(MeanPosterior, VarPosterior))
-}
-
-xStar <- seq(-1,1,0.01)
-
-### 1b) ###
-
-x <- 0.4
-
-y <- 0.719
-
-posterior <- posteriorGP(x, y, xStar, c(1, 0.3), 0.1^2)
-
-MeanPosterior <- posterior[[1]]
-
-VarPosterior <- posterior[[2]]
-
-PlotLines(x, y, xStar, MeanPosterior, diag(VarPosterior))
-
-### 1c) ###
-
-x <- c(-0.6, 0.4)
-y <- c(-0.044, 0.719)
-
-posterior <- posteriorGP(x, y, xStar, c(1, 0.3), 0.1^2) 
-
-MeanPosterior <- posterior[[1]]
-
-VarPosterior <- posterior[[2]]
-
-PlotLines(x, y, xStar, MeanPosterior, diag(VarPosterior))
-
-
-### 1d) ###
-
-x <- c(-1.0, -0.6, -0.2, 0.4, 0.8)
-y <- c(0.768, -0.044, -0.940, 0.719, -0.664)
-
-posterior <- posteriorGP(x, y, xStar, c(1, 0.3), 0.1^2)
-
-MeanPosterior <- posterior[[1]]
-
-VarPosterior <- posterior[[2]]
-
-PlotLines(x, y, xStar, MeanPosterior, diag(VarPosterior))
-
-### 1e) ###
-
-posterior <- posteriorGP(x, y, xStar, c(1, 1), 0.1^2)
-
-MeanPosterior <- posterior[[1]]
-
-VarPosterior <- posterior[[2]]
-
-PlotLines(x, y, xStar, MeanPosterior, diag(VarPosterior))
-
-### 2 ###
-#install.packages("kernlab")
-library(kernlab)
-
-data <- read.csv('https://github.com/STIMALiU/AdvMLCourse/raw/master/GaussianProcess/Code/TempTullinge.csv', header=TRUE,
-          sep=';')
-
-time <- seq(1,2190, 5)
-
-day <- rep(time[1:73],6)
-
-temp <- data[time,2]
-
-scaledTemp <- scale(temp) # Needed for implementation of posteriorGP
-
-scaledCenter <- attributes(scaledTemp)$'scaled:center'
-
-scale <- attributes(scaledTemp)$'scaled:scale'
-
-timetemp <- cbind(time, temp)
-
-daytemp <- cbind(day, temp)
-
-daytemp <- daytemp[order(daytemp[,1]),]
 
 ### 2a ###
 
 SEkernel <- function(sigmaf=1, ell=3){
   rval <- function(x, y = NULL){
-      return(sigmaf^2*exp(-0.5*( (x-y)/ell)^2))
+    return(sigmaf^2*exp(-0.5*( (x-y)/ell)^2))
   }
   class(rval) <- "kernel"
   return(rval)
 }
-
 mySE <- SEkernel(sigmaf=1, ell=1) 
-
 mySE(1,2)
+[1] 0.6065307
 
 kernelMatrix(mySE, c(1,3,4), c(2,3,4))
+An object of class "kernelMatrix"
+          [,1]      [,2]      [,3]
+[1,] 0.6065307 0.1353353 0.0111090
+[2,] 0.6065307 1.0000000 0.6065307
+[3,] 0.1353353 0.6065307 1.0000000
 
 ### 2b ###
 
-sigmaNoise <- summary(lm(formula = temp ~ time + I(time^2)))$sigma
-
-polyFit <- lm(temp ~ time + I(time^2))
-sigmaNoise2 = sd(polyFit$residuals)
+sigmaNoise <- summary(lm(formula = temp ~ time + I(time^2)))$sigma #day would be more reasonable(?)
 
 # ell = 0.02 => overfitting
 # ell = 5 => overly smooth
 # smaller sigmaf => more compact predictions (worse)
-# sigmaf large enough => no changes for larger sigmaf
+# sigmaf large enough => no changes of posterior function
 model <- gausspr(time, temp, kernel = SEkernel(sigmaf=20, ell=0.2), var = sigmaNoise^2)
 
 meanTime <- predict(model, time)
 
 plot(time, temp, col="gray")
-#lines(day,mean)
 lines(time, meanTime, col="red")
 
 ### 2c ###
@@ -166,33 +88,11 @@ PlotLines(time, temp, 1:2186, MeanPosterior, diag(VarPosterior), c(-15,30))
 
 ### 2d ### 
 
-sigmaNoise <- summary(lm(formula = temp ~ day + I(day^2)))$sigma
-
 model <- gausspr(day, temp, kernel = SEkernel(sigmaf=20, ell=1.2), var = sigmaNoise^2)
 
 meanDay <- predict(model, day)
 
-#plot(time, temp)
 lines(time, meanDay , col="blue")
-
-### 2d ### (own implementation)
-
-model <- gausspr(daytemp[,1], daytemp[,2], kernel = SEkernel(sigmaf=20, ell=1.2), var = sigmaNoise^2)
-
-mean <- predict(model, timetemp[,1])
-
-plot(daytemp[,1], daytemp[,2], col="gray")
-lines(timetemp[,1],mean, col="red")
-
-posterior <- posteriorGP(scale(daytemp[,1]), scale(daytemp[,2]), scale(timetemp[,1]), c(20, 5), sigmaNoise = sigmaNoise^2)
-
-MeanPosterior <- posterior[[1]]
-
-VarPosterior <- posterior[[2]]
-
-PlotLines(timetemp[,1], timetemp[,2], timetemp[,1], scaledCenter + scale*MeanPosterior, diag(VarPosterior), c(-15,30))
-
-diag(VarPosterior)
 
 ### 2e) ###
 
@@ -214,15 +114,12 @@ meanPeriodicKernel <- predict(model, time)
 
 lines(time, meanPeriodicKernel , col="green")
 
-legend(1500, -10, legend=c("SE Kernel Time", "SE Kernel Day", "Periodic Kernel Time"),
-       col=c("red", "blue", "green"), lty=1:1)
-
 ### Task 3
 
 library(AtmRay)
 
 data <- read.csv('https://github.com/STIMALiU/AdvMLCourse/raw/master/GaussianProcess/Code/banknoteFraud.csv',
-                  header=FALSE, sep=',')
+                 header=FALSE, sep=',')
 names(data) <- c("varWave","skewWave","kurtWave","entropyWave","fraud")
 data[,5] <- as.factor(data[,5])
 
@@ -236,12 +133,15 @@ test <- data[-SelectTraining,]
 
 GPClassification <- gausspr(x=training[,1:2], y=training[,5], data=training, type="classification")
 
-
 preds <- predict(GPClassification,subset(training, select=c("varWave", "skewWave")))
 
 confMatrixTr <- table(preds, training$fraud)
+preds   0   1
+0     512  24
+1      44 420
 
 accTr <- sum(diag(confMatrixTr))/sum(confMatrixTr)
+[1] 0.932
 
 x1 <- seq(min(training[,1]),max(training[,1]),length=1000)
 x2 <- seq(min(training[,2]),max(training[,2]),length=1000)
@@ -264,8 +164,12 @@ GPClassification
 
 predict(GPClassification,subset(test, select=c("varWave", "skewWave")))
 confMatrixTe <- table(predict(GPClassification,subset(test, select=c("varWave", "skewWave"))), test$fraud)
+    0   1
+0 192   9
+1  14 157
 
 accTe <- sum(diag(confMatrixTe))/sum(confMatrixTe)
+[1] 0.938172
 
 ### 3c
 
@@ -274,5 +178,10 @@ GPClassification
 
 predict(GPClassification, subset(test, select=c("varWave","skewWave","kurtWave","entropyWave")))
 confMatrixFullTe <- table(predict(GPClassification,subset(test, select=c("varWave","skewWave","kurtWave","entropyWave"))), test$fraud)
+    0   1
+0 205   0
+1   1 166
 
 accFullTe <- sum(diag(confMatrixFullTe))/sum(confMatrixFullTe)
+[1] 0.9973118
+

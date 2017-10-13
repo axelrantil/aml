@@ -30,7 +30,7 @@ SSM <- function(steps, sdE){
   udfT <- runif(100,0,1)
   
   # first emission
-  x[1] <- emissionFunction(z[1], udfE[1], 1)
+  x[1] <- emissionFunction(z[1], udfE[1], sdE)
   
   for (t in 2:T){
     #transition
@@ -41,65 +41,70 @@ SSM <- function(steps, sdE){
   return(list(z, x))
 }
 
-sdE <- 1
 
-result <- SSM(100, sdE)
-
-z <- result[[1]]
-
-x <- result[[2]]
-
-zApprox <- matrix(0, 100, 100) 
-
-weights <- rep(0, 100)
-
-particles <- matrix(0, 100, 101)
-
-particles[,1] <- runif(100,1,100) # zt^m
-
-### Loopen
-
-#install.packages("LaplacesDemon")
-library(LaplacesDemon)
-
-for (s in 1:100){ # s for step
-  for (p in 1:100){ # p for particle
-    weights[p] <- (dnorm(x[1], particles[p], sdE) + dnorm(x[1], particles[p]-1, sdE) + dnorm(x[1], particles[p] + 1 , sdE))/ 3
-  }
-  weights <- weights/sum(weights) # 
+filtering <- function(x, sdE){
+  sdE <- sdE
+  zApprox <- matrix(0, 1, 100) 
+  weights <- matrix(0,100,100)
+  particles <- matrix(0, 100, 101)
+  weightComponent<-matrix(0,100,100)
   
-  for (i in 1:100){ # i for iteration
-    particles[i, s+1] <- weights[i] * (rnorm(1, particles[i, s], sdE) + rnorm(1, particles[i, s]+1, sdE) + rnorm(1, particles[i, s]+2, sdE))/3 # mixture distribution
+  particles[,1] <- runif(100,1,100) # zt^m
+  
+  for (t in 1:100){ # t for time
+    for (p in 1:100){ # p for particle
+      weights[p,t] <- (dnorm(x[t], particles[p, t], sdE)
+                       + dnorm(x[t], particles[p, t]-1, sdE)
+                       + dnorm(x[t], particles[p,t]+1 , sdE))/ 3
+    }
+    weights[,t] <- weights[,t]/sum(weights[,t]) # Normalize
+    weightComponent[,t] <- sample(particles[,t], size=100, replace=TRUE, prob = weights[,t])
+    
+    ufd <- runif(100,0,1)
+    for (p in 1:100){ # p for particle
+      particles[p, t+1] <- transitionFunction(weightComponent[p, t], ufd = ufd[p], sdT = 1)
+    }
+    zApprox[t] <- sum(weights[,t]*particles[,t])
   }
+  return(list(zApprox, weights, particles))
 }
 
-hist(particles[particles[,2]<2,2])
+set.seed(123456)
 
+sdE <- 50
 
-##fel nedan
+simulation <- SSM(100, sdE)
 
-# zApprox[,s] <- weights*particles[,s] # MIXTURE DISTRIBUTION 
-# 
-# knas <- rcat(100, zApprox[,s])
+z <- simulation[[1]]
+x <- simulation[[2]]
 
-for (s in 1:100){ # s for step
-  ufdE <- runif(100,0,1)
-  for (p in 1:100){ # p for particle
-    weights[p] <- dnorm(x[s], mean = emissionFunction(particles[p, s], ufdE[p], sdE), sd = sdE)
-  }
-  weights <- weights/sum(weights) # normalize
-  zApprox[s] <- sum(weights*particles[,s]) # approximate z
-  ufdT <- runif(100,0,1) # random variables for transition
-  for (i in 1:100){ # i for iteration
-    particles[i, s+1] <- rnorm(1, mean = transitionFunction(zApprox[s], ufdT[i], sdE), sd=sdE)
-  }
-}
+result <- filtering(x, sdE)
 
-plot(1:100, apply(particles, 1, mean))
-lines(1:100, zApprox)
+zApprox <- result[[1]]
+weights <- result[[2]]
+particles <- result[[3]]
 
-hist(z-zApprox)
+SEError <- sqrt(sum((zApprox-z)^2))
 
-installed.packages(reshape2)
+plot(1:100,z,type="l", col = "red")
+lines(1:100, zApprox, col="green")
+
+plot(1:100, abs(z - zApprox), type="l", ylab="Difference between z and approx", xlab="Step")
+
+zMat<-matrix(z,100,100,byrow=TRUE)
+
+apply(abs(zMat-particles[,1:100]),2,mean)
+
+plot(1:100,apply(abs(zMat-particles[,1:100]),2,mean))
+
+#installed.packages(reshape2)
+library(reshape2)
+plot(melt(particles)[,2:3],xlab="Step", ylab="Particles, estimated and real z")
+lines(1:100, z, col="red")
+lines(1:100, zApprox, col="green")
+lines(1:100, x, col="yellow")
 library(reshape2)
 plot(melt(particles)[,2:3])
+
+hist(z-zApprox, breaks=20)
+

@@ -1,0 +1,21 @@
+Examination 732A96:
+Very much like the labs
+More detailed instructions in the coming days
+Access to help material, pdf material, labs, last years exam.
+
+Material provided by us: your own book, send 100 page pdf. Specific instructions in the mail.
+
+1.b) cpdag(bn) = skeleton(bin)
+
+1.c) triangulate => moralize => ls algorithm
+
+2.b) Replicate state if you want it to stay in the same position. For each of the five sectors, you will have to states (duplicates). Ex: s1, s1' 
+
+1c) Terms used in the description: EM algorithm, expected counts, alpha and beta recursions.
+
+
+1. Gör tentan
+2. Gör labbarna igen
+3. Implementera forward-backward
+
+100-sidiga pdf:en, allt tillåtet, egen kod etc:

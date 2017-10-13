@@ -97,12 +97,6 @@ GPfit <- gausspr(Distance, LogRatio, kernel = Matern32, kpar = list(sigmaf = sig
 meanPred <- predict(GPfit, Distance)
 lines(Distance, meanPred, col="black", lwd = 2)
 
-
-
-
-
-
-
 ###############################################
 ####       Classification on Iris data      ###
 ###############################################

@@ -14,15 +14,20 @@ sapply(df,class)
 
 View(df)
 
+
 bn1 <- hc(df, start = NULL, whitelist = NULL, blacklist = NULL,
-          score = NULL, debug = FALSE, restart = 0, perturb = 1, 
+          score = NULL, debug = FALSE, restart = 1, perturb = 4, 
           max.iter = Inf, maxp = Inf, optimized = TRUE)
 
 bn2 <- hc(df, start = NULL, whitelist = NULL, blacklist = NULL,
-         score = NULL, debug = FALSE, restart = 0, perturb = 1, 
+         score = NULL, debug = FALSE, restart = 1, perturb = 4, 
          max.iter = Inf, maxp = Inf, optimized = TRUE)
 
 graphviz.plot(bn1)
+
+bn1 <- cpdag(bn1)
+
+bn2 <- cpdag(bn2)
 
 all.equal(bn1,bn2) # Should be false
 
