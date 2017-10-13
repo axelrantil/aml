@@ -14,7 +14,6 @@ sapply(df,class)
 
 View(df)
 
-
 bn1 <- hc(df, start = NULL, whitelist = NULL, blacklist = NULL,
           score = NULL, debug = FALSE, restart = 1, perturb = 4, 
           max.iter = Inf, maxp = Inf, optimized = TRUE)
@@ -74,7 +73,7 @@ dfOwn <- df[df$Housing=="own",] # Set conditional to "own"
 
 tableOwnManualMLE <- prop.table(table(dfOwn[,c("Good/BadCredit","CreditHistory")]),2) # Maximum likelihood method
 
-tableOwnFittedMLE <- fittedMLE$`Good/BadCredit`$prob[,,2] # Extract probabilities Good/BadCredit given Housing="own"
+% # Extract probabilities Good/BadCredit given Housing="own"
 
 all.equal(tableOwnFittedMLE, tableOwnManualMLE) # True for all entries
 
