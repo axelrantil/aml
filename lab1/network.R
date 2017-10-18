@@ -1,9 +1,63 @@
 ############# TASK ONE #############
 
+load.data <- function() {
+  
+  df <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data", header = FALSE, sep = " ")
+  
+  sapply(df,class)
+  
+  df$V21 <- as.factor(df$V21)
+  
+  header <- c("Checking account",
+              "Duration",
+              "CreditHistory",
+              "Purpose",
+              "Amount credit",
+              "Savings account",
+              "EmploymentSince",
+              "Installment rate",
+              "MaritalAndSex",
+              "Guarantors",
+              "Residence since",
+              "Owned property",
+              "Age",
+              "Installment plans",
+              "Housing",
+              "Current credit here",
+              "Job",
+              "People care for",
+              "Telephone",
+              "Foreign worker",
+              "Good/BadCredit"
+  )
+  
+  colnames(df) <- header
+  
+  df <- df[, c("CreditHistory", "Purpose", "EmploymentSince", "MaritalAndSex", "Job", "Housing", "Good/BadCredit")] #Discrete
+  
+  require(plyr)
+  
+  df$CreditHistory <- mapvalues(df$CreditHistory,
+                                from=c("A30", "A31", "A32", "A33", "A34"),
+                                to=c("No History/Good", "this bank payed back",
+                                     "existing and on time", "delay in payments",
+                                     "critical/other credits"))
+  
+  df$Housing <- mapvalues(df$Housing,
+                          from=c("A151", "A152", "A153"),
+                          to=c("rent", "own", "free"))
+  
+  df$`Good/BadCredit` <- mapvalues(df$`Good/BadCredit`,
+                                   from=c("1", "2"),
+                                   to=c("good", "bad"))
+  
+  return(list("df"=df, "header"=header))
+}
+
+
 library(bnlearn)
 library(gRain)
 
-source ("import_data.R") 
 ret <- load.data()
 
 df <- ret$df 
@@ -14,7 +68,7 @@ sapply(df,class)
 
 View(df)
 
-bn1 <- hc(df, start = NULL, whitelist = NULL, blacklist = NULL,
+bn1 <- hc(df, start = NULL, whitelist = NULL, blacklist = NULL, ##BIC by default
           score = NULL, debug = FALSE, restart = 1, perturb = 4, 
           max.iter = Inf, maxp = Inf, optimized = TRUE)
 
@@ -73,7 +127,7 @@ dfOwn <- df[df$Housing=="own",] # Set conditional to "own"
 
 tableOwnManualMLE <- prop.table(table(dfOwn[,c("Good/BadCredit","CreditHistory")]),2) # Maximum likelihood method
 
-% # Extract probabilities Good/BadCredit given Housing="own"
+# Extract probabilities Good/BadCredit given Housing="own"
 
 all.equal(tableOwnFittedMLE, tableOwnManualMLE) # True for all entries
 
@@ -137,9 +191,10 @@ matrix(c(difference0, difference1, difference3),3,2,byrow=TRUE, dimnames = cr)
 
 ############# TASK FOUR #############
 
-samples <- 50000
+samples <- 1000000
 
-rDAG <- random.graph(LETTERS[1:5], num = samples, method = "melancon")
+### burn.in and every as high as possible
+rDAG <- random.graph(LETTERS[1:5], num = samples, method = "melancon", burn.in = 150, every = 2)
 
 length(unique(rDAG))
 

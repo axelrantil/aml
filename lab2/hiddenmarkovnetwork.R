@@ -4,15 +4,15 @@ library(data.table)
 
 ### TASK ONE ###
 
-states <- paste(rep("z =",10), 0:9)
+states <- paste(rep("z =",10), 0:9) # Space of states
 
-stateNames <- paste(rep("z =",10), 0:9)
+symbols <- paste(rep("z =",10), 0:9) # Space of emissions
 
-stepProbs <- cbind(c(numeric(9),1/2),1/2*diag(x=10)) 
+### Transitions probs is a matrix of nxn, where n is the number of states
+transitionProbs <- cbind(c(numeric(9),1/2),1/2*diag(x=10)) 
+transitionProbs <- transitionProbs[,-11] + 1/2*diag(10) 
 
-stepProbs <- stepProbs[,-11] + 1/2*diag(10) 
-
-dimnames(stepProbs) <-list(as.character(0:9), as.character(0:9))
+dimnames(transitionProbs) <-list(as.character(0:9), as.character(0:9))
 
 emissionProbs <- c(1/5, 1/5, 1/5, 0, 0, 0, 0, 0, 1/5, 1/5)
 
@@ -20,9 +20,10 @@ for (i in 1:10) {
   emissionProbs <- c(emissionProbs, shift(tail(emissionProbs,n=10), n=1, fill = tail(emissionProbs,n=1)))
 }
 
-emissionProbs <- matrix(emissionProbs, 10, 10, byrow=TRUE, dimnames=list(stateNames, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
+## Emissionmatrix is nxm, where n is the number of states and m is the number of symbols
+emissionProbs <- matrix(emissionProbs, nrow=length(states), ncol=length(symbols), byrow=TRUE, dimnames=list(symbols, paste(rep("p(x=",10),as.character(0:9),rep(")",10))))
 
-hmm = initHMM(stateNames, states, transProbs = stepProbs, emissionProbs = emissionProbs)
+hmm = initHMM(states, symbols, transProbs = transitionProbs, emissionProbs = emissionProbs)
 
 ### TASK TWO ###
 
@@ -103,7 +104,6 @@ filteredAccSecondHalf # Not necessarily higher
 ### TASK SEVEN ###
 
 ### Check last index, step 100 ###
-
 prop.table(forwardAlpha*backwardBeta,2)[,100] == prop.table(forwardAlpha,2)[,100] # True for all states
 
 step100 <- prop.table(forwardAlpha,2)[,100]

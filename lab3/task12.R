@@ -167,7 +167,8 @@ PlotLines(time, temp, 1:2186, MeanPosterior, diag(VarPosterior), c(-15,30))
 
 sigmaNoise <- summary(lm(formula = temp ~ day + I(day^2)))$sigma
 
-model <- gausspr(day, temp, kernel = SEkernel(sigmaf=20, ell=1.2), var = sigmaNoise^2)
+## 6 times 0.2 because of 6 years
+model <- gausspr(day, temp, kernel = SEkernel(sigmaf=20, ell=(6*0.2)), var = sigmaNoise^2)
 
 meanDay <- predict(model, day)
 
@@ -205,6 +206,9 @@ PeriodicKernel <- function(sigmaf=1, l1=3, l2=3, d){
   return(rval)
 }
 
+## l1 controls the correlation of the same day in different years
+## l2 controls the correlation of the days nearby
+## kernlab standardized inputs to have standard deviation of 1 (hence strange period)
 PK <- PeriodicKernel(sigmaf=20, l1=1, l2=10, d=365/sd(time))
 
 model <- gausspr(time, temp, kernel = PK, var = sigmaNoise^2)
