@@ -1,0 +1,12 @@
+# gamma-exponential kernel
+k <- function(sigmaf = 1, ell = 1, gamma = 2)  
+{   
+	rval <- function(x, y = NULL) 
+    {       
+		r = sqrt(crossprod(x-y))       
+		return(sigmaf^2*exp(-(r/ell)^gamma))     
+	}   
+    class(rval) <- "kernel"   
+    return(rval) 
+}
+
